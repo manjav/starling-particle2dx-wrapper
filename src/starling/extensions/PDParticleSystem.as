@@ -64,10 +64,13 @@ package starling.extensions
         private var _endColor:ColorArgb;                    // finishColor
         private var _endColorVariance:ColorArgb;            // finishColorVariance
         
-        public function PDParticleSystem(config:XML, texture:Texture)
+        public function PDParticleSystem(config:Object, texture:Texture)
         {
             super(texture);
-            parseConfig(config);
+			if( config is XML )
+				parseConfig(config as XML);
+			else
+				parseJsonConfig(config);
         }
         
         protected override function createParticle():Particle
@@ -215,6 +218,61 @@ package starling.extensions
             emissionRate = (capacity - 1) / _lifespan;
         }
         
+		private function parseJsonConfig(config:Object):void 
+		{
+            _emitterXVariance = config.sourcePositionVariancex;
+            _emitterYVariance = config.sourcePositionVariancey;
+            _gravityX = config.gravityx;
+            _gravityY = config.gravityy;
+            _emitterType = config.emitterType;
+            _lifespan = Math.max(0.01, config.particleLifespan);
+            _lifespanVariance = config.particleLifespanVariance;
+            _startSize = config.startParticleSize;
+            _startSizeVariance = config.startParticleSizeVariance;
+            _endSize = config.finishParticleSize;
+            _endSizeVariance = config.finishParticleSizeVariance;
+            _emitAngle = deg2rad(config.angle);
+            _emitAngleVariance = deg2rad(config.angleVariance);
+            _startRotation = deg2rad(config.rotationStart);
+            _startRotationVariance = deg2rad(config.rotationStartVariance);
+            _endRotation = deg2rad(config.rotationEnd);
+            _endRotationVariance = deg2rad(config.rotationEndVariance);
+            _speed = config.speed;
+            _speedVariance = config.speedVariance;
+            _radialAcceleration = config.radialAcceleration;
+            _radialAccelerationVariance = config.radialAccelVariance;
+            _tangentialAcceleration = config.tangentialAcceleration;
+            _tangentialAccelerationVariance = config.tangentialAccelVariance;
+            _maxRadius = config.maxRadius;
+            _maxRadiusVariance = config.maxRadiusVariance;
+            _minRadius = config.minRadius;
+            _minRadiusVariance = config.minRadiusVariance;
+            _rotatePerSecond = deg2rad(config.rotatePerSecond);
+            _rotatePerSecondVariance = deg2rad(config.rotatePerSecondVariance);
+            _startColor = new ColorArgb(config.startColorRed, config.startColorGreen, config.startColorBlue, config.startColorAlpha);
+            _startColorVariance = new ColorArgb(config.startColorVarianceRed, config.startColorVarianceGreen, config.startColorVarianceBlue, config.startColorVarianceAlpha);
+            _endColor = new ColorArgb(config.finishColorRed, config.finishColorGreen, config.finishColorBlue, config.finishColorAlpha);
+            _endColorVariance = new ColorArgb(config.finishColorVarianceRed, config.finishColorVarianceGreen, config.finishColorVarianceBlue, config.finishColorVarianceAlpha);
+            blendFactorSource = getBlendFunc(config.blendFuncSource);
+            blendFactorDestination = getBlendFunc(config.blendFuncDestination);
+            defaultDuration = config.duration;
+            capacity = config.maxParticles;
+
+            // compatibility with future Particle Designer versions
+            // (might fix some of the uppercase/lowercase typos)
+            
+            if (isNaN(_endSizeVariance))
+                _endSizeVariance = config.finishParticleSizeVariance;
+            if (isNaN(_lifespan))
+                _lifespan = Math.max(0.01, config.particleLifeSpan);
+            if (isNaN(_lifespanVariance))
+                _lifespanVariance = config.particleLifeSpanVariance;
+            if (isNaN(_minRadiusVariance))
+                _minRadiusVariance = 0.0;
+
+            updateEmissionRate();
+		}
+		
         private function parseConfig(config:XML):void
         {
             _emitterXVariance = parseFloat(config.sourcePositionVariance.attribute("x"));
@@ -250,8 +308,8 @@ package starling.extensions
             _startColorVariance = getColor(config.startColorVariance);
             _endColor = getColor(config.finishColor);
             _endColorVariance = getColor(config.finishColorVariance);
-            blendFactorSource = getBlendFunc(config.blendFuncSource);
-            blendFactorDestination = getBlendFunc(config.blendFuncDestination);
+            blendFactorSource = getBlendFunc(getIntValue(config.blendFuncSource));
+            blendFactorDestination = getBlendFunc(getIntValue(config.blendFuncDestination));
             defaultDuration = getFloatValue(config.duration);
             capacity = getIntValue(config.maxParticles);
 
@@ -288,27 +346,26 @@ package starling.extensions
                 color.alpha = parseFloat(element.attribute("alpha"));
                 return color;
             }
-            
-            function getBlendFunc(element:XMLList):String
-            {
-                var value:int = getIntValue(element);
-                switch (value)
-                {
-                    case 0:     return Context3DBlendFactor.ZERO;
-                    case 1:     return Context3DBlendFactor.ONE;
-                    case 0x300: return Context3DBlendFactor.SOURCE_COLOR;
-                    case 0x301: return Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR;
-                    case 0x302: return Context3DBlendFactor.SOURCE_ALPHA;
-                    case 0x303: return Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
-                    case 0x304: return Context3DBlendFactor.DESTINATION_ALPHA;
-                    case 0x305: return Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA;
-                    case 0x306: return Context3DBlendFactor.DESTINATION_COLOR;
-                    case 0x307: return Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR;
-                    default:    throw new ArgumentError("unsupported blending function: " + value);
-                }
-            }
         }
-        
+	
+		private function getBlendFunc(value:int):String
+		{
+			switch (value)
+			{
+				case 0:     return Context3DBlendFactor.ZERO;
+				case 1:     return Context3DBlendFactor.ONE;
+				case 0x300: return Context3DBlendFactor.SOURCE_COLOR;
+				case 0x301: return Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR;
+				case 0x302: return Context3DBlendFactor.SOURCE_ALPHA;
+				case 0x303: return Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
+				case 0x304: return Context3DBlendFactor.DESTINATION_ALPHA;
+				case 0x305: return Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA;
+				case 0x306: return Context3DBlendFactor.DESTINATION_COLOR;
+				case 0x307: return Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR;
+				default:    throw new ArgumentError("unsupported blending function: " + value);
+			}
+		}
+		
         public function get emitterType():int { return _emitterType; }
         public function set emitterType(value:int):void { _emitterType = value; }
 
