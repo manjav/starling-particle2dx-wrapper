@@ -29,6 +29,11 @@ package
         [Embed(source="../media/jellyfish.pex", mimeType="application/octet-stream")]
         private static const JellyfishConfig:Class;
 
+		// corona json particle
+        [Embed(source="../media/blueExplosion.pex", mimeType="application/octet-stream")]
+        private static const BlueExplosionConfig:Class;
+
+		
         // particle textures
         
         [Embed(source="../media/drugs_particle.png")]
@@ -42,6 +47,9 @@ package
         
         [Embed(source="../media/jellyfish_particle.png")]
         private static const JellyfishParticle:Class;
+        
+        [Embed(source="../media/jellyfish_particle.png")]
+        private static const BlueExplosionParticle:Class;
 
         // member variables
         
@@ -69,11 +77,15 @@ package
             var jellyConfig:XML = XML(new JellyfishConfig());
             var jellyTexture:Texture = Texture.fromEmbeddedAsset(JellyfishParticle);
 
+            var blueConfig:XML = XML(new BlueExplosionConfig());
+            var blueTexture:Texture = Texture.fromEmbeddedAsset(BlueExplosionParticle);
+
             _particleSystems = new <ParticleSystem>[
                 new PDParticleSystem(drugsConfig, drugsTexture),
                 new PDParticleSystem(fireConfig, fireTexture),
                 new PDParticleSystem(sunConfig, sunTexture),
-                new PDParticleSystem(jellyConfig, jellyTexture)
+                new PDParticleSystem(jellyConfig, jellyTexture),
+                new PDParticleSystem(blueConfig, blueTexture)
             ];
 
             // add event handlers for touch and keyboard
