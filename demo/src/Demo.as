@@ -30,8 +30,8 @@ package
         private static const JellyfishConfig:Class;
 
 		// corona json particle
-        [Embed(source="../media/blueExplosion.pex", mimeType="application/octet-stream")]
-        private static const BlueExplosionConfig:Class;
+        [Embed(source="../media/blueflame.json", mimeType="application/octet-stream")]
+        private static const BlueflameConfig:Class;
 
 		
         // particle textures
@@ -48,8 +48,8 @@ package
         [Embed(source="../media/jellyfish_particle.png")]
         private static const JellyfishParticle:Class;
         
-        [Embed(source="../media/jellyfish_particle.png")]
-        private static const BlueExplosionParticle:Class;
+        [Embed(source="../media/blueflame_particle.png")]
+        private static const BlueflameParticle:Class;
 
         // member variables
         
@@ -77,8 +77,8 @@ package
             var jellyConfig:XML = XML(new JellyfishConfig());
             var jellyTexture:Texture = Texture.fromEmbeddedAsset(JellyfishParticle);
 
-            var blueConfig:XML = XML(new BlueExplosionConfig());
-            var blueTexture:Texture = Texture.fromEmbeddedAsset(BlueExplosionParticle);
+            var blueConfig:Object = JSON.parse(new BlueflameConfig());
+            var blueTexture:Texture = Texture.fromEmbeddedAsset(BlueflameParticle);
 
             _particleSystems = new <ParticleSystem>[
                 new PDParticleSystem(drugsConfig, drugsTexture),
